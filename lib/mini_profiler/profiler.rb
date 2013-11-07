@@ -64,7 +64,7 @@ module Rack
       def create_current(env={}, options={})
         # profiling the request
         self.current = Context.new
-        self.current.inject_js = config.auto_inject && (!env['HTTP_X_REQUESTED_WITH'].eql? 'XMLHttpRequest')
+        self.current.inject_js = !options[:skip_it] && (!env['HTTP_X_REQUESTED_WITH'].eql? 'XMLHttpRequest')
         self.current.page_struct = PageTimerStruct.new(env)
         self.current.current_timer = current.page_struct['Root']
       end
@@ -233,7 +233,7 @@ module Rack
         end
       end
 
-      MiniProfiler.create_current(env, @config)
+      MiniProfiler.create_current(env, @config.merge(:skip_it => skip_it))
       MiniProfiler.deauthorize_request if @config.authorization_mode == :whitelist
 
       if query_string =~ /pp=normal-backtrace/
